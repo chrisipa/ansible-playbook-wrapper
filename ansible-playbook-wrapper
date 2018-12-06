@@ -2,6 +2,7 @@
 
 # configuration
 timeout=30
+inventoryFileName="hosts"
 vaultPasswordFile="/tmp/vault-password-file-$(date +%s%N).txt"
 ansibleCommand="ansible-playbook"
 
@@ -20,12 +21,12 @@ function usage() {
 
     # print help text
     cat <<USAGE
-
 Usage:
   $scriptName [Options] <Args>
 
 Options:
   -h                    Show this help text
+  -i <inventory file>   Inventory file to use [optional]
   -d                    Perform dry run
   -l <host>             Limit to specified host [optional]
   -p <playbook file>    Playbook file to use
@@ -48,17 +49,21 @@ echo ""
 echo "############################"
 echo "# Ansible Playbook Wrapper #"
 echo "############################"
+echo ""
 
 # get command line args
-while getopts hdl:p:rs:t:v: opt
+while getopts dhi:l:p:rs:t:v: opt
 do
     case $opt in
+        d)
+            ansibleCommand="$ansibleCommand --check"
+        ;;
         h)
             usage
             exit -1
         ;;
-        d)
-            ansibleCommand="$ansibleCommand --check"
+        i)
+            inventoryFilePath="$OPTARG"
         ;;
         l)
             if [ "$OPTARG" != "all" ]
@@ -96,6 +101,20 @@ then
     usage
 fi
 
+# search for inventory file if not specified
+if [ "$inventoryFilePath" == ""  ]
+then
+    playbookFolderPath="$(dirname $playbookFilePath)"
+    inventoryFilePath="$(find $playbookFolderPath -name $inventoryFileName -type f)"
+
+    # check if inventory file was not found
+    if [ "$inventoryFilePath" == "" ]
+    then
+        # print usage
+        usage
+    fi
+fi
+
 # read sudo password from command line
 if [ "$sudoPassword" == "" ]
 then 
@@ -114,7 +133,7 @@ fi
 echo "$vaultPassword" > "$vaultPasswordFile"
 
 # build ansible playbook
-ansibleCommand="$ansibleCommand -i hosts --timeout '$timeout' --vault-password-file '$vaultPasswordFile' --extra-vars ansible_sudo_pass='$sudoPassword' --extra-vars ansible_ssh_pass='$sudoPassword' --extra-vars ansible_python_interpreter=/usr/bin/python3 '$playbookFilePath'"
+ansibleCommand="$ansibleCommand -i '$inventoryFilePath' --timeout '$timeout' --vault-password-file '$vaultPasswordFile' --extra-vars ansible_sudo_pass='$sudoPassword' --extra-vars ansible_ssh_pass='$sudoPassword' --extra-vars ansible_python_interpreter=/usr/bin/python3 '$playbookFilePath'"
 
 # execute ansible playbook
 eval $ansibleCommand

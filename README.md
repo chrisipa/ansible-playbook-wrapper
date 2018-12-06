@@ -13,6 +13,7 @@ Simple bash wrapper to execute Ansible playbooks in a more convenient way:
 
    Options:
      -h                    Show this help text
+     -i <inventory file>   Inventory file to use [optional]
      -d                    Perform dry run
      -l <host>             Limit to specified host [optional]
      -p <playbook file>    Playbook file to use
