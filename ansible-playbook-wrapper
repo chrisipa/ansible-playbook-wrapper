@@ -1,0 +1,123 @@
+#!/bin/bash
+
+# configuration
+timeout=30
+vaultPasswordFile="/tmp/vault-password-file-$(date +%s%N).txt"
+ansibleCommand="ansible-playbook"
+
+# disable host key checking
+export ANSIBLE_HOST_KEY_CHECKING=False
+
+# get script folder
+scriptPath="$(readlink -f $0)"
+scriptFolder="$(dirname $scriptPath)"
+scriptName="$(basename $scriptPath)"
+
+# ---------------------------------------------------------------
+# Function for printing the usage of this script
+# ---------------------------------------------------------------
+function usage() {
+
+    # print help text
+    cat <<USAGE
+
+Usage:
+  $scriptName [Options] <Args>
+
+Options:
+  -h                    Show this help text
+  -d                    Perform dry run
+  -l <host>             Limit to specified host [optional]
+  -p <playbook file>    Playbook file to use
+  -r                    Retry execution for failed hosts
+  -s <sudo password>    SUDO password to use [optional]
+  -t <task name>        Start at task with specified name
+  -v <vault password>	Vault password to use [optional]
+
+Example:
+  $scriptName -p my-playbook.yml -s my-sudo-password -v my-vault-password -l my-single-host
+
+USAGE
+
+    # exit with error
+    exit -1
+}
+
+# echo script banner
+echo ""
+echo "############################"
+echo "# Ansible Playbook Wrapper #"
+echo "############################"
+
+# get command line args
+while getopts hdl:p:rs:t:v: opt
+do
+    case $opt in
+        h)
+            usage
+            exit -1
+        ;;
+        d)
+            ansibleCommand="$ansibleCommand --check"
+        ;;
+        l)
+            if [ "$OPTARG" != "all" ]
+            then
+                ansibleCommand="$ansibleCommand --limit '$OPTARG'"
+            fi    
+        ;;
+        p)
+            playbookFilePath="$OPTARG"
+        ;;
+        r)
+            playbookName="$(echo $(basename $playbookFilePath) | awk -F "." '{print $1}')"
+            ansibleCommand="$ansibleCommand --limit '@${scriptFolder}/${playbookName}.retry'"
+        ;;
+        s)
+            sudoPassword="$OPTARG"
+        ;;   
+        t)
+            ansibleCommand="$ansibleCommand --start-at-task='$OPTARG'"
+        ;;   
+        v)
+            vaultPassword="$OPTARG"
+	    ;; 
+        \?)
+            log "ERROR" "Invalid option: -$OPTARG"
+            exit -1
+        ;;
+    esac
+done
+
+# check command line args
+if [ "$playbookFilePath" == "" ]
+then 
+    # print usage
+    usage
+fi
+
+# read sudo password from command line
+if [ "$sudoPassword" == "" ]
+then 
+    read -s -p "SUDO Password: " sudoPassword
+    echo ""
+fi    
+
+# read vault password from command line
+if [ "$vaultPassword" == "" ]
+then 
+    read -s -p "Vault Password: " vaultPassword
+    echo ""
+fi
+
+# create vault password file
+echo "$vaultPassword" > "$vaultPasswordFile"
+
+# build ansible playbook
+ansibleCommand="$ansibleCommand -i hosts --timeout '$timeout' --vault-password-file '$vaultPasswordFile' --extra-vars ansible_sudo_pass='$sudoPassword' --extra-vars ansible_ssh_pass='$sudoPassword' --extra-vars ansible_python_interpreter=/usr/bin/python3 '$playbookFilePath'"
+
+# execute ansible playbook
+eval $ansibleCommand
+
+# remove vault password file
+rm -f "$vaultPasswordFile"
