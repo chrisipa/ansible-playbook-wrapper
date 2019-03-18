@@ -6,8 +6,8 @@ inventoryFileName="hosts"
 vaultPasswordFile="/tmp/vault-password-file-$(date +%s%N).txt"
 ansibleCommand="ansible-playbook"
 
-# disable host key checking
-export ANSIBLE_HOST_KEY_CHECKING=False
+# disable host key checking and DNS spoofing warnings
+export ANSIBLE_SSH_ARGS="-C -o ControlMaster=auto -o ControlPersist=60s -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no"
 
 # get script folder
 scriptPath="$(readlink -f $0)"
