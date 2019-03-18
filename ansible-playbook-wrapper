@@ -28,6 +28,7 @@ Options:
   -h                    Show this help text
   -i <inventory file>   Inventory file to use [optional]
   -d                    Perform dry run
+  -k <private key>      Private key to use for the SSH connection [optional] 
   -l <host>             Limit to specified host [optional]
   -p <playbook file>    Playbook file to use
   -r                    Retry execution for failed hosts
@@ -52,7 +53,7 @@ echo "############################"
 echo ""
 
 # get command line args
-while getopts dhi:l:p:rs:t:v: opt
+while getopts dhi:k:l:p:rs:t:v: opt
 do
     case $opt in
         d)
@@ -64,6 +65,10 @@ do
         ;;
         i)
             inventoryFilePath="$OPTARG"
+        ;;
+        k)
+            privateKey="$OPTARG"
+            ansibleCommand="$ansibleCommand --private-key=$privateKey"
         ;;
         l)
             if [ "$OPTARG" != "all" ]
