@@ -192,7 +192,7 @@ fi
 echo "$vaultPassword" > "$vaultPasswordFile"
 
 # build ansible playbook
-ansibleCommand="$ansibleCommand -i '$inventoryFilePath' --timeout '$timeout' --vault-password-file '$vaultPasswordFile' --extra-vars ansible_sudo_pass='$sudoPassword' --extra-vars ansible_ssh_pass='$sudoPassword' --extra-vars ansible_python_interpreter=/usr/bin/python3 '$playbookFilePath'"
+ansibleCommand="$ansibleCommand -i '$inventoryFilePath' --timeout '$timeout' --vault-password-file '$vaultPasswordFile' --extra-vars ansible_sudo_pass='$sudoPassword' --extra-vars ansible_become_pass='$sudoPassword' --extra-vars ansible_ssh_pass='$sudoPassword' --extra-vars ansible_python_interpreter=/usr/bin/python3 '$playbookFilePath'"
 
 # execute ansible playbook
 log "INFO" "Executing Ansible playbook from file '$playbookFileName'"
