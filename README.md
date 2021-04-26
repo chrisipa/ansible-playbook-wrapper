@@ -21,6 +21,7 @@ Simple bash wrapper to execute Ansible playbooks in a more convenient way:
       -i <inventory file>   Inventory file to use
       -k <private key>      Private key to use for the SSH connection
       -l <host>             Limit to specified host
+      -m                    Use mitogen to speed up playbook execution
       -r                    Retry execution for failed hosts
       -s <sudo password>    SUDO password to use
       -t <task name>        Start at task with specified name

@@ -11,10 +11,7 @@ vaultPasswordFile="/tmp/vault-password-file-$(date +%s%N).txt"
 ansibleCommand="ansible-playbook"
 galaxyRolesFileName="requirements.yml"
 galaxyRolesInstall="false"
-
-# disable host key checking and DNS spoofing warnings
-export ANSIBLE_HOST_KEY_CHECKING="False"
-export ANSIBLE_SSH_ARGS="-C -o ControlMaster=auto -o ControlPersist=60s -o UserKnownHostsFile=/dev/null"
+mitogenStrategyFolder="/opt/mitogen/ansible_mitogen/plugins/strategy"
 
 
 #############
@@ -58,6 +55,7 @@ Not required options:
   -i <inventory file>   Inventory file to use
   -k <private key>      Private key to use for the SSH connection
   -l <host>             Limit to specified host
+  -m                    Use mitogen to speed up playbook execution
   -r                    Retry execution for failed hosts
   -s <sudo password>    SUDO password to use
   -t <task name>        Start at task with specified name
@@ -90,7 +88,7 @@ scriptFolder="$(dirname $scriptPath)"
 scriptName="$(basename $scriptPath)"
 
 # get command line args
-while getopts dghi:k:l:p:rs:t:v: opt
+while getopts dghi:k:l:mp:rs:t:v: opt
 do
     case $opt in
         d)
@@ -115,6 +113,9 @@ do
             then
                 ansibleCommand="$ansibleCommand --limit '$OPTARG'"
             fi    
+        ;;
+        m)
+            mitogenStrategy="true"
         ;;
         p)
             playbookFilePath="$OPTARG"
@@ -150,6 +151,10 @@ fi
 playbookFolderPath="$(dirname $playbookFilePath)"
 playbookFileName="$(basename $playbookFilePath)"
 
+# disable host key checking and DNS spoofing warnings
+export ANSIBLE_HOST_KEY_CHECKING="False"
+export ANSIBLE_SSH_ARGS="-C -o ControlMaster=auto -o ControlPersist=60s -o UserKnownHostsFile=/dev/null"
+
 # should galaxy roles be installed?
 if [ "$galaxyRolesInstall" == "true" ]
 then
@@ -159,6 +164,13 @@ then
     # install galaxy roles
     log "INFO" "Installing Ansible Galaxy roles from file '$galaxyRolesFileName'"
     ansible-galaxy install -c -r "$galaxyRolesFilePath"
+fi
+
+# should mitogen be used to speed up playbook execution?
+if [ "$mitogenStrategy" == "true" ]
+then
+    export ANSIBLE_STRATEGY_PLUGINS="$mitogenStrategyFolder"
+    export ANSIBLE_STRATEGY="mitogen_linear"
 fi
 
 # search for inventory file if not specified
