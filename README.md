@@ -16,6 +16,7 @@ Simple bash wrapper to execute Ansible playbooks in a more convenient way:
   
     Not required options:  
       -d                    Perform dry run
+      -e <extra var>        Extra variable to use
       -g                    Install galaxy roles from requirements.yml file
       -h                    Show this help text
       -i <inventory file>   Inventory file to use

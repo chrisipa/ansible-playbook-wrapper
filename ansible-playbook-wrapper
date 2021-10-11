@@ -50,6 +50,7 @@ Required options:
 
 Not required options:   
   -d                    Perform dry run
+  -e <extra var>        Extra variable to use
   -g                    Install galaxy roles from $galaxyRolesFileName file
   -h                    Show this help text
   -i <inventory file>   Inventory file to use
@@ -88,12 +89,15 @@ scriptFolder="$(dirname $scriptPath)"
 scriptName="$(basename $scriptPath)"
 
 # get command line args
-while getopts dghi:k:l:mp:rs:t:v: opt
+while getopts de:ghi:k:l:mp:rs:t:v: opt
 do
     case $opt in
         d)
             ansibleCommand="$ansibleCommand --check"
         ;;
+        e)
+             ansibleCommand="$ansibleCommand --extra-vars '$OPTARG'"
+	    ;;
         g)
             galaxyRolesInstall="true"
         ;;
