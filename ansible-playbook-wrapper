@@ -93,7 +93,7 @@ while getopts de:ghi:k:l:mp:rs:t:v: opt
 do
     case $opt in
         d)
-            ansibleCommand="$ansibleCommand --check"
+            ansibleCommand="$ansibleCommand --check --diff"
         ;;
         e)
              ansibleCommand="$ansibleCommand --extra-vars '$OPTARG'"
