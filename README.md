@@ -26,7 +26,7 @@ Simple bash wrapper to execute Ansible playbooks in a more convenient way:
       -r                    Retry execution for failed hosts
       -s <sudo password>    SUDO password to use
       -t <task name>        Start at task with specified name
-      -v <vault password>	  Vault password to use
+      -v <vault password>	 Vault password to use
       -x <tags>             Tags to skip
 
     Example:
