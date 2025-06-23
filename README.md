@@ -27,7 +27,7 @@ Simple bash wrapper to execute Ansible playbooks in a more convenient way:
       -s <sudo password>    SUDO password to use
       -t <task name>        Start at task with specified name
       -v <vault password>	  Vault password to use
-      -x <tags>				      Tags to skip
+      -x <tags>             Tags to skip
 
     Example:
       $scriptName -p my-playbook.yml -s my-sudo-password -v my-vault-password -l my-single-host
