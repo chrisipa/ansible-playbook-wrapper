@@ -61,6 +61,7 @@ Not required options:
   -s <sudo password>    SUDO password to use
   -t <task name>        Start at task with specified name
   -v <vault password>	Vault password to use
+  -x <tags>				Tags to skip
 
 Example:
   $scriptName -p my-playbook.yml -s my-sudo-password -v my-vault-password -l my-single-host
@@ -89,7 +90,7 @@ scriptFolder="$(dirname $scriptPath)"
 scriptName="$(basename $scriptPath)"
 
 # get command line args
-while getopts de:ghi:k:l:mp:rs:t:v: opt
+while getopts de:ghi:k:l:mp:rs:t:v:x: opt
 do
     case $opt in
         d)
@@ -137,6 +138,9 @@ do
         v)
             vaultPassword="$OPTARG"
 	    ;; 
+        x)
+            ansibleCommand="$ansibleCommand --skip-tags='$OPTARG'"
+        ;;
         \?)
             log "ERROR" "Invalid option: -$OPTARG"
             exit -1
