@@ -50,3 +50,13 @@ Installation
    ```
    sudo chmod +x /usr/local/bin/ansible-playbook-wrapper
    ```
+
+Usage with Docker
+-----------------
+Instead of installing Ansible locally, you can use the Docker image built on GitHub. It includes Ansible, `sshpass` and [mitogen](https://mitogen.networkgenomics.com/ansible_detailed.html), so `-m` works out of the box.
+
+* Run the wrapper from the folder containing your playbook. The current folder is mounted to `/project` in the container, so all paths must be relative to it:
+
+   ```
+   docker run --rm -it --network host -v "$PWD:/project" ghcr.io/chrisipa/ansible-playbook-wrapper -m -p my-playbook.yml ...
+   ```
